@@ -1,15 +1,9 @@
 import { initializeApp } from "firebase/app";
-import {createContext, useContext} from 'react';
-// import { getAnalytics } from "firebase/analytics";
+import { createContext, useContext, useEffect, useState } from 'react';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+import { getFirestore} from "firebase/firestore";
 
 const FirebaseContext = createContext(null)
-export const useFirebase =()=> useContext(FirebaseContext)
-
-export const FirebaseProvider =(props)=>{
-    return <FirebaseContext.Provider>
-        {props.children}
-    </FirebaseContext.Provider>
-}
 
 const firebaseConfig = {
   apiKey: "AIzaSyB838yovgQgZCMcNtMd-zm4v9Ajclq1gBo",
@@ -22,6 +16,52 @@ const firebaseConfig = {
   databaseURL : "https://linkvault-c3409-default-rtdb.firebaseio.com/"
 };
 
+const firebaseApp = initializeApp(firebaseConfig);
+const firebaseAuth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
-export const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
+export const useFirebase = () => useContext(FirebaseContext);
+
+
+export const FirebaseProvider = (props) => {
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+            if (user) {
+                setUser(user);
+            } else {
+                setUser(null);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const signupUserWithEmailAndPassword = (email, password) => {
+        return createUserWithEmailAndPassword(firebaseAuth, email, password);
+    }
+
+    const signinUserWithEmailAndPassword = (email, password) => {
+        return signInWithEmailAndPassword(firebaseAuth, email, password);
+    }
+
+    const logout = () => {
+        return signOut(firebaseAuth);
+    }
+
+    const isLoggedIn = user ? true : false;
+
+    return (
+        <FirebaseContext.Provider value={{
+            signupUserWithEmailAndPassword,
+            signinUserWithEmailAndPassword,
+            logout,
+            isLoggedIn,
+            user,
+            db
+        }}>
+
+            {props.children}
+        </FirebaseContext.Provider>
+    )
+}

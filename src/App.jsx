@@ -1,17 +1,23 @@
-// import {app} from "./firebase"
-import { Routes, Route } from "react-router-dom";
-import {SignUp} from './pages/SignUp'
-import {Login} from './pages/login'
+import { Routes, Route, Navigate } from "react-router-dom";
+import SignupPage from './pages/signup'
+import LoginPage from './pages/login'
+import HomePage from './pages/Home'
+import Navbar from './components/Navbar'
 
 function App() {
   return (
     <>
+      <Navbar />
       <Routes>
-        <Route path="/" Component={Login} />
-        <Route path="/" Component={SignUp} />
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/home" element={<HomePage />} />
       </Routes>
     </>
   );
 }
+
+
 
 export default App;
